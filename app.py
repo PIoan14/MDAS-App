@@ -3,7 +3,7 @@ import random
 import time
 from datetime import datetime
 import os
-
+from fcontent_extractor import extract_file_content
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -127,6 +127,16 @@ if st.sidebar.button("➕ New Conversation"):
     st.session_state.conversations[new_name] = []
     st.session_state.current_conv = new_name
     st.rerun()
+# ===== Upload discret sub New Conversation =====
+st.sidebar.markdown("### Attach a file")
+uploaded_file = st.sidebar.file_uploader("📎", type=["txt", "pdf", "png", "jpg", "jpeg"], label_visibility="collapsed")
+
+# Procesează fișierul imediat dacă există
+if uploaded_file is not None:
+    st.sidebar.markdown(f"📎 {uploaded_file.name} attached")
+    # Extrage conținutul fișierului folosind funcția creată anterior
+    file_data = extract_file_content(uploaded_file)
+    st.session_state["last_uploaded_file_content"] = file_data 
 
 
 # ===== ZONA PRINCIPALĂ DE CHAT =====
@@ -174,7 +184,6 @@ if len(messages) == 0:
         unsafe_allow_html=True,
     )
 
-
 # ===== Afișare mesaje existente =====
 for msg in messages:
     with st.chat_message(msg["role"]):
@@ -182,9 +191,20 @@ for msg in messages:
 
 # ===== Introducere mesaj nou =====
 if prompt := st.chat_input("💬 Say something..."):
-    messages.append({"role": "user", "content": prompt})
+    prompt_on_screen = prompt
+    if uploaded_file:
+        addition = f" Answer based on this file content : {st.session_state["last_uploaded_file_content"]["content"]}"
+        messages.append({"role": "user", "content": prompt})
+        prompt += addition
+        print(prompt)
+        
+    else:
+        st.session_state["last_uploaded_file_content"] = ""
+        print(prompt)
+        messages.append({"role": "user", "content": prompt})
+
     with st.chat_message("user"):
-        st.markdown(f"🙂 {prompt}")
+        st.markdown(f"🙂 {prompt_on_screen}")
 
     with st.chat_message("assistant"):
         response = st.write_stream(response_generator(prompt))
