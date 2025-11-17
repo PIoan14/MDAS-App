@@ -2,17 +2,31 @@ import streamlit as st
 import random
 import time
 from datetime import datetime
+import os
 
-def response_generator():
-    response = random.choice(
-        [
-            "Hello there! 👋 How can I assist you today?",
-            "Hi, human! 🤖 Anything I can help you with?",
-            "Do you need help? 🧐",
-            "Sure! Let me think about that for a moment... 💭",
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv() 
+
+def get_client():
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key)
+
+    return client
+
+def response_generator(question):
+    client = get_client()
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+
+            {"role": "user", "content": question},
         ]
     )
-    for word in response.split():
+    final_response = response.choices[0].message.content
+    for word in final_response.split():
         yield word + " "
         time.sleep(0.05)
 
@@ -140,7 +154,7 @@ if len(messages) == 0:
                 with st.chat_message("user"):
                     st.markdown(q)
                 with st.chat_message("assistant"):
-                    response = st.write_stream(response_generator())
+                    response = st.write_stream(response_generator(question=q))
                 messages.append({"role": "assistant", "content": response})
                 st.session_state.conversations[
                     st.session_state.current_conv
@@ -173,6 +187,6 @@ if prompt := st.chat_input("💬 Say something..."):
         st.markdown(f"🙂 {prompt}")
 
     with st.chat_message("assistant"):
-        response = st.write_stream(response_generator())
+        response = st.write_stream(response_generator(prompt))
     messages.append({"role": "assistant", "content": response})
     st.session_state.conversations[st.session_state.current_conv] = messages
