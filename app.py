@@ -111,6 +111,25 @@ if st.session_state.conversations:
             else "conversation-button"
         )
 
+        cols = st.sidebar.columns([0.7, 0.3])  # 80% pentru nume, 20% pentru delete
+        with cols[0]:
+            st.write("**********************************")
+            st.write()
+        #     if st.button(label, key=f"select_{conv_name}"):
+        #         st.session_state.current_conv = conv_name
+        #         st.rerun()
+        #     else:
+        #         st.markdown(
+        #             f"<div class='{button_class}'>{label}</div>", unsafe_allow_html=True
+        #         )
+        with cols[1]:
+            if st.button("🗑", key=f"delete_{conv_name}"):
+                del st.session_state.conversations[conv_name]
+                # Dacă ștergi conversația curentă, resetează current_conv
+                if st.session_state.current_conv == conv_name:
+                    st.session_state.current_conv = None
+                st.rerun()
+
         if st.sidebar.button(label, key=conv_name):
             st.session_state.current_conv = conv_name
             st.rerun()
