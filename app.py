@@ -164,10 +164,11 @@ if st.session_state.current_conv:
 else:
     st.warning("💡 Create or select a conversation from the sidebar to begin.")
     st.stop()
+    messages = ""
 
 
 # ===== FAQ la început (doar conversație nouă) =====
-if len(messages) == 0:
+if not messages:
     st.markdown("### 💡 Frequently Asked Questions")
     cols = st.columns(2)
     faq_buttons = [
